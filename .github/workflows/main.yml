@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,3 +16,5 @@ jobs:
         run: python3 -m venv venv && source venv/bin/activate
       - name: 'Install requirements'
         run: pip3 install -r requirements.txt
+      - name: 'Check code style'
+        run: black --check --diff .
