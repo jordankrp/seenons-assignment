@@ -10,8 +10,8 @@ def get_waste_streams(post_code):
     print(waste_streams)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Post code parser')
-    parser.add_argument('-p', '--post-code', help='Post code (4 integers only)', required=True)
+    parser = argparse.ArgumentParser(description='Postal code parser')
+    parser.add_argument('-p', '--postalcode', help='Post code (4 integers only)', required=True)
     args = parser.parse_args()
 
-    get_waste_streams(args.post_code)
+    get_waste_streams(args.postalcode)
