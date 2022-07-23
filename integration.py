@@ -1,18 +1,21 @@
 import requests
 import argparse
-from datetime import datetime
+import inquirer
+from datetime import datetime, date
 
-HUISVUILKALENDAR = 'https://huisvuilkalender.denhaag.nl/rest/adressen/0518200001769843/kalender/2022'
+HUISVUILKALENDAR = 'https://huisvuilkalender.denhaag.nl'
+ADDRESS = 'https://huisvuilkalender.denhaag.nl/adressen/2512HE:68'
 SEENONS_BASE = 'https://api-dev-593.seenons.com/api/me/streams'
 QUERY_KEY = 'postal_code'
+YEAR = date.today().year
 
-def get_waste_streams(post_code):
-    url = f'{SEENONS_BASE}?{QUERY_KEY}={post_code}'
+def get_waste_streams(postalcode):
+    url = f'{SEENONS_BASE}?{QUERY_KEY}={postalcode}'
     waste_streams = requests.get(url).json()
     return waste_streams
     
-def get_dates_per_stream():
-    url = HUISVUILKALENDAR
+def get_dates_per_stream(bagid):
+    url = f'{HUISVUILKALENDAR}/rest/adressen/{bagid}/kalender/{YEAR}'
     dates = requests.get(url).json()
     return dates
 
@@ -21,17 +24,48 @@ def translate_date_to_weekday(date):
     #return datetime_object.weekday()
     return datetime_object.strftime('%A')
 
+def get_house_letter(postcode, housenumber):
+    url = f'{HUISVUILKALENDAR}/adressen/{postcode}:{housenumber}'
+    response = requests.get(url).json()
+    letters = []
+    for item in response:
+        letters.append(item['huisletter'])
+    question = [
+        inquirer.List('houseletter',
+                       message="Which is the house letter?",
+                       choices=letters
+                    ),
+    ]
+    answer = inquirer.prompt(question)
+    return answer['houseletter']
+
+def get_bagid(postcode, housenumber, houseletter):
+    url = f'{HUISVUILKALENDAR}/adressen/{postcode}:{housenumber}'
+    response = requests.get(url).json()
+    for item in response:
+        if item['huisletter'] == houseletter:
+            return item['bagid']
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Postal code parser')
-    parser.add_argument('-p', '--postalcode', help='Post code (4 integers only)', required=True)
-    parser.add_argument('-wd', '--weekday', nargs='+', help='Weekdays (Monday, Tuesday ...)', required=False)
+    parser.add_argument('-p', '--postalcode', help='Post code (no space)', required=True)
+    parser.add_argument('-n', '--housenumber', help='House Number', required=True)
+    parser.add_argument('-wd', '--weekday', nargs='+', help='Weekdays (Monday, Tuesday etc...)', required=False)
     args = parser.parse_args()
+
+    # Get house letter
+    house_letter = get_house_letter(args.postalcode, args.housenumber)
+    print(f'House letter: {house_letter}')
+
+    # Get bag ID
+    bag_id = get_bagid(args.postalcode, args.housenumber, house_letter)
+    print(f'Bag ID: {bag_id}')
 
     # Available waste streams for the postal code given (using Seenons API)
     waste_streams = get_waste_streams(args.postalcode)
 
     # Available dates per stream (using huisvuilkalendar API)
-    dates = get_dates_per_stream()
+    dates = get_dates_per_stream(bag_id)
 
     # Add weekday data to the dates
     for date in dates:
