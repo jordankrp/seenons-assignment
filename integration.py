@@ -22,8 +22,8 @@ def get_dates_per_stream(bagid):
     return dates
 
 
-def translate_date_to_weekday(date):
-    datetime_object = datetime.strptime(date, "%Y-%m-%d")
+def translate_date_to_weekday(calendar_date):
+    datetime_object = datetime.strptime(calendar_date, "%Y-%m-%d")
     # return datetime_object.weekday()
     return datetime_object.strftime("%A")
 
@@ -55,13 +55,13 @@ def create_availability_dict(dates, seenons_stream_ids):
     # Create a dict with stream ID as keys and all available dates per stream as their values
     stream_dict = {}
     available_dates = []
-    for date in dates:
+    for item in dates:
         # If stream ID of (filtered) dates dict is in the Seenons API list
-        if date["afvalstroom_id"] in seenons_stream_ids:
+        if item["afvalstroom_id"] in seenons_stream_ids:
             # First append the list of dates
-            available_dates.append(date["ophaaldatum"])
+            available_dates.append(item["ophaaldatum"])
             # Add waste stream ID as key to the dict and assign the dates list as its value
-            stream_dict[date["afvalstroom_id"]] = available_dates
+            stream_dict[item["afvalstroom_id"]] = available_dates
     return stream_dict
 
 
@@ -86,12 +86,12 @@ def main(postcode, housenumber, weekdays=None):
     dates = get_dates_per_stream(bag_id)
 
     # Add weekday data to the dates
-    for date in dates:
-        date["weekday"] = translate_date_to_weekday(date["ophaaldatum"])
+    for item in dates:
+        item["weekday"] = translate_date_to_weekday(item["ophaaldatum"])
 
     # Check if weekdays are given by the user, if so filter out dates accordingly
     if weekdays is not None:
-        # Need to filter date list to contain only weekdays asked by the user
+        # Need to filter dates list to contain only weekdays asked by the user
         dates[:] = [d for d in dates if d.get("weekday") in weekdays]
 
     available_streams = create_availability_dict(dates, seenons_stream_ids)
