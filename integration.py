@@ -4,7 +4,6 @@ import inquirer
 from datetime import datetime, date
 
 HUISVUILKALENDAR = "https://huisvuilkalender.denhaag.nl"
-ADDRESS = "https://huisvuilkalender.denhaag.nl/adressen/2512HE:68"
 SEENONS_BASE = "https://api-dev-593.seenons.com/api/me/streams"
 QUERY_KEY = "postal_code"
 YEAR = date.today().year
