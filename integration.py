@@ -46,23 +46,35 @@ def get_bagid(postcode, housenumber, houseletter):
         if item['huisletter'] == houseletter:
             return item['bagid']
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Postal code parser')
-    parser.add_argument('-p', '--postalcode', help='Post code (no space)', required=True)
-    parser.add_argument('-n', '--housenumber', help='House Number', required=True)
-    parser.add_argument('-wd', '--weekday', nargs='+', help='Weekdays (Monday, Tuesday etc...)', required=False)
-    args = parser.parse_args()
+def create_availability_dict(dates, seenons_stream_ids):
+    # Create a dict with stream ID as keys and all available dates per stream as their values
+    stream_dict = {}
+    available_dates = []
+    for date in dates:
+        # If stream ID of (filtered) dates dict is in the Seenons API list
+        if date['afvalstroom_id'] in seenons_stream_ids:
+            # First append the list of dates
+            available_dates.append(date['ophaaldatum'])
+            # Add waste stream ID as key to the dict and assign the dates list as its value
+            stream_dict[date['afvalstroom_id']] = available_dates
+    return stream_dict
 
+def main(postcode, housenumber, weekdays=None):
     # Get house letter
-    house_letter = get_house_letter(args.postalcode, args.housenumber)
+    house_letter = get_house_letter(postcode, housenumber)
     print(f'House letter: {house_letter}')
 
     # Get bag ID
-    bag_id = get_bagid(args.postalcode, args.housenumber, house_letter)
+    bag_id = get_bagid(postcode, housenumber, house_letter)
     print(f'Bag ID: {bag_id}')
 
     # Available waste streams for the postal code given (using Seenons API)
-    waste_streams = get_waste_streams(args.postalcode)
+    waste_streams = get_waste_streams(postcode)
+
+    # Make list of stream IDs
+    seenons_stream_ids = []
+    for stream in waste_streams['items']:
+        seenons_stream_ids.append(stream['stream_product_id'])
 
     # Available dates per stream (using huisvuilkalendar API)
     dates = get_dates_per_stream(bag_id)
@@ -71,17 +83,32 @@ if __name__ == "__main__":
     for date in dates:
         date['weekday'] = translate_date_to_weekday(date['ophaaldatum'])
 
-    # Check if weekdays are given by the user
-    if args.weekday is not None:
+    # Check if weekdays are given by the user, if so filter out dates accordingly
+    if weekdays is not None:
         # Need to filter date list to contain only weekdays asked by the user
-        dates[:] = [d for d in dates if d.get('weekday') in args.weekday]
+        dates[:] = [d for d in dates if d.get('weekday') in weekdays]
 
-    print('All available waste streams:')
-    for stream in waste_streams['items']:
-        print(f"{stream['type']} ({stream['stream_product_id']})")
-        for date in dates:
-            if date['afvalstroom_id'] == stream['stream_product_id']:
-                print(f"Stream {stream['stream_product_id']} available on day {date['ophaaldatum']} which is {date['weekday']}")
+    available_streams = create_availability_dict(dates, seenons_stream_ids)
+
+    # Visualise output
+    print(f'Available waste streams for postal code {postcode}, housenumber {housenumber}{house_letter}:')
+    for stream_id, available_dates in available_streams.items():
+        for waste_stream in waste_streams['items']:
+            if stream_id == waste_stream['stream_product_id']:
+                print(f"{(waste_stream['type'])} (ID: {stream_id})")
+    
+        print(f"Available dates (user requested {weekdays}):")
+        for i in available_dates:
+            print(i)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--postcode', help='Post code (no space)', required=True)
+    parser.add_argument('-n', '--housenumber', help='House Number', required=True)
+    parser.add_argument('-wd', '--weekdays', nargs='+', help='Weekdays (Monday, Tuesday etc...)', required=False)
+    args = parser.parse_args()
+
+    main(args.postcode, args.housenumber, args.weekdays)
 
 
 
