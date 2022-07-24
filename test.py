@@ -22,7 +22,7 @@ class TestIntegration(unittest.TestCase):
         self.assertNotEqual(house_info, [])
         # House letter should be a dict key
         for item in house_info:
-            self.assertIn('huisletter', item)
+            self.assertIn("huisletter", item)
         print("Test 2 completed")
 
     def test_3(self):
