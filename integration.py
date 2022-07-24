@@ -53,8 +53,7 @@ def choose_house_letter(house_info):
         return answer["houseletter"]
     # Else house info contains one entries, so the house letter of this single entry is used
     else:
-        return house_info[0]['huisletter']
-
+        return house_info[0]["huisletter"]
 
 
 def get_bagid(postcode, housenumber, houseletter):
