@@ -1,5 +1,5 @@
 import unittest
-from integration import get_bagid, get_house_info
+from integration import get_bagid, get_house_info, choose_house_letter
 
 
 class TestIntegration(unittest.TestCase):
@@ -35,6 +35,18 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(house_info, expected_house_info)
         print("Test 3 completed")
 
+    def test_4(self):
+        # Test single house for given house number
+        post_code = "2518JC"
+        house_number = "15"
+        house_info = get_house_info(post_code, house_number)
+        # House info expected to contain 1 element
+        self.assertEqual(len(house_info), 1)
+        # Choose letter should automatically select huisleter from the single entry
+        house_letter = choose_house_letter(house_info)
+        self.assertEqual(house_letter, "")
+        print("test 4 completed")
+
 
 if __name__ == "__main__":
     tester = TestIntegration()
@@ -42,3 +54,4 @@ if __name__ == "__main__":
     tester.test_1()
     tester.test_2()
     tester.test_3()
+    tester.test_4()

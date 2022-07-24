@@ -40,15 +40,21 @@ def get_house_info(postcode, housenumber):
 def choose_house_letter(house_info):
     # Ask user to insert house letter from the ones available.
     letters = []
-    for item in house_info:
-        letters.append(item["huisletter"])
-    question = [
-        inquirer.List(
-            "houseletter", message="Which is the house letter?", choices=letters
-        ),
-    ]
-    answer = inquirer.prompt(question)
-    return answer["houseletter"]
+    # If house info contains more than one entry, prompt user to select house letter
+    if len(house_info) > 1:
+        for item in house_info:
+            letters.append(item["huisletter"])
+        question = [
+            inquirer.List(
+                "houseletter", message="Which is the house letter?", choices=letters
+            ),
+        ]
+        answer = inquirer.prompt(question)
+        return answer["houseletter"]
+    # Else house info contains one entries, so the house letter of this single entry is used
+    else:
+        return house_info[0]['huisletter']
+
 
 
 def get_bagid(postcode, housenumber, houseletter):
