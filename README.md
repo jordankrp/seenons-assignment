@@ -16,3 +16,7 @@ If POSTCODE and HOUSENUMBER do not form a valid address, the program will exit.
 WEEKDAY must be one of the following: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
 
 If a weekday is misspelled, it will just be ignored.
+
+Returns:
+Available waste streams for given address (Type and ID).
+Available dates for each waste stream.
