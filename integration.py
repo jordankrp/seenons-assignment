@@ -65,7 +65,7 @@ def choose_house_letter(house_info):
         ]
         answer = inquirer.prompt(question)
         return answer["houseletter"]
-    # Else house info contains one entries, so the house letter of this single entry is used.
+    # Else house info contains one entry, so the house letter of this single entry is used.
     else:
         return house_info[0]["huisletter"]
 

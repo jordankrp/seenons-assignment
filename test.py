@@ -1,5 +1,10 @@
 import unittest
-from integration import get_bagid, get_house_info, choose_house_letter
+from integration import (
+    get_bagid,
+    get_house_info,
+    choose_house_letter,
+    get_waste_streams_per_postcode,
+)
 
 
 class TestIntegration(unittest.TestCase):
@@ -47,6 +52,17 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(house_letter, "")
         print("test 4 completed")
 
+    def test_5(self):
+        # Test Seenons API waste streams
+        post_code = "2566WD"
+        waste_streams = get_waste_streams_per_postcode(post_code)
+        # Cross check some random entries with postman API
+        self.assertEqual(waste_streams["totalItems"], 3)
+        self.assertEqual(waste_streams["items"][0]["stream_product_id"], 6)
+        self.assertEqual(waste_streams["items"][0]["type"], "sinaasappelschillen")
+        self.assertEqual(waste_streams["items"][2]["type"], "plastic-emmers")
+        print("test 5 completed")
+
 
 if __name__ == "__main__":
     tester = TestIntegration()
@@ -55,3 +71,4 @@ if __name__ == "__main__":
     tester.test_2()
     tester.test_3()
     tester.test_4()
+    tester.test_5()
