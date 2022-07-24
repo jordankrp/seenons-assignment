@@ -4,6 +4,7 @@ from integration import (
     get_house_info,
     choose_house_letter,
     get_waste_streams_per_postcode,
+    get_dates_per_stream,
 )
 
 
@@ -53,7 +54,7 @@ class TestIntegration(unittest.TestCase):
         print("test 4 completed")
 
     def test_5(self):
-        # Test Seenons API waste streams
+        # Test Seenons API waste streams request
         post_code = "2566WD"
         waste_streams = get_waste_streams_per_postcode(post_code)
         # Cross check some random entries with postman API
@@ -62,6 +63,14 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(waste_streams["items"][0]["type"], "sinaasappelschillen")
         self.assertEqual(waste_streams["items"][2]["type"], "plastic-emmers")
         print("test 5 completed")
+
+    def test_6(self):
+        # Test Huisvuilkalendar API request
+        bag_id = "0518200001769844"
+        dates = get_dates_per_stream(bag_id)
+        self.assertEqual(dates[0]["afvalstroom_id"], 4)
+        self.assertEqual(dates[1]["ophaaldatum"], "2022-01-11")
+        print("test 6 completed")
 
 
 if __name__ == "__main__":
@@ -72,3 +81,4 @@ if __name__ == "__main__":
     tester.test_3()
     tester.test_4()
     tester.test_5()
+    tester.test_6()
