@@ -27,7 +27,7 @@ class TestIntegration(unittest.TestCase):
 
     def test_3(self):
         # Test wrong house number
-        post_code = "2514HE"
+        post_code = "2512HE"
         house_number = "34"
         house_info = get_house_info(post_code, house_number)
         # House info expected to be an empty list

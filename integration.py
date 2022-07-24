@@ -1,6 +1,7 @@
 import requests
 import argparse
 import inquirer
+import sys
 from datetime import datetime, date
 
 HUISVUILKALENDAR = "https://huisvuilkalender.denhaag.nl"
@@ -76,6 +77,10 @@ def create_availability_dict(dates, seenons_stream_ids):
 def main(postcode, housenumber, weekdays=None):
     # Get house letter
     house_info = get_house_info(postcode, housenumber)
+    # If post code / house number is wrong, we get an empty list for house info and need to exit
+    if house_info == []:
+        print("Postal address does not exist")
+        sys.exit()
     house_letter = choose_house_letter(house_info)
     print(f"House letter: {house_letter}")
 
