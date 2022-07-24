@@ -29,13 +29,17 @@ def translate_date_to_weekday(calendar_date):
     return datetime_object.strftime("%A")
 
 
-def get_house_letter(postcode, housenumber):
+def get_house_info(postcode, housenumber):
     # Display options for available house letters given the post code and house number.
-    # Ask user to insert house letter from the ones available.
     url = f"{HUISVUILKALENDAR}/adressen/{postcode}:{housenumber}"
-    response = requests.get(url).json()
+    house_info = requests.get(url).json()
+    return house_info
+
+
+def choose_house_letter(house_info):
+    # Ask user to insert house letter from the ones available.
     letters = []
-    for item in response:
+    for item in house_info:
         letters.append(item["huisletter"])
     question = [
         inquirer.List(
@@ -71,7 +75,8 @@ def create_availability_dict(dates, seenons_stream_ids):
 
 def main(postcode, housenumber, weekdays=None):
     # Get house letter
-    house_letter = get_house_letter(postcode, housenumber)
+    house_info = get_house_info(postcode, housenumber)
+    house_letter = choose_house_letter(house_info)
     print(f"House letter: {house_letter}")
 
     # Get bag ID
