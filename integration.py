@@ -2,6 +2,7 @@ import requests
 import argparse
 import inquirer
 import sys
+import copy
 from datetime import datetime, date
 
 HUISVUILKALENDAR = "https://huisvuilkalender.denhaag.nl"
@@ -10,12 +11,24 @@ QUERY_KEY = "postal_code"
 YEAR = date.today().year
 
 
-def get_waste_streams(postalcode):
+def get_all_waste_streams():
+    # Get all waste streams from Seenons API.
+    url = SEENONS_BASE
+    waste_streams = requests.get(url).json()
+    return waste_streams
+
+
+def get_waste_streams_per_postcode(postalcode):
     # Get waste streams for given post code using the Seenons API.
     url = f"{SEENONS_BASE}?{QUERY_KEY}={postalcode}"
     waste_streams = requests.get(url).json()
     return waste_streams
 
+def get_afvalstromen(bagid):
+    # Get 'afvalstromen' from the Huisvuilkalendar API.
+    url = f"{HUISVUILKALENDAR}/rest/adressen/{bagid}/afvalstromen"
+    afvalstromen = requests.get(url).json()
+    return afvalstromen
 
 def get_dates_per_stream(bagid):
     # Get dates and waste streams IDs from the Huisvuilkalendar API using bag ID.
@@ -79,10 +92,23 @@ def create_availability_dict(dates, seenons_stream_ids):
     return stream_dict
 
 
+def translate_afvalstromen_to_seenons_id(all_waste_streams, afvalstromen):
+    # Need to translate afvalstrrom ID values to that of Seenons API.
+    # Change the IDs in afvalstromen to match Seenons API.
+    # All IDs are considered (0) until we find a match to the Seenons API
+    for afvalstroom in afvalstromen:
+        afvalstroom['id'] = 0
+        for stream in all_waste_streams['items']:
+            if stream['type'].lower().startswith(afvalstroom['title'].lower()):
+                afvalstroom['id'] = stream['stream_product_id']
+    return afvalstromen
+
+
 def main(postcode, housenumber, weekdays=None):
     # Get house info
     house_info = get_house_info(postcode, housenumber)
     # If post code / house number is wrong, we get an empty list for house info and need to exit.
+    # In this was we avoid getting 
     if house_info == []:
         print("Postal address does not exist")
         sys.exit()
@@ -96,15 +122,32 @@ def main(postcode, housenumber, weekdays=None):
     print(f"Bag ID: {bag_id}")
 
     # Available waste streams for the postal code given (using Seenons API).
-    waste_streams = get_waste_streams(postcode)
-
+    waste_streams = get_waste_streams_per_postcode(postcode)
     # Make list of available stream IDs.
     seenons_stream_ids = []
     for stream in waste_streams["items"]:
         seenons_stream_ids.append(stream["stream_product_id"])
 
-    # Available dates per stream (using Huisvuilkalendar API).
+    # Available dates per stream using Huisvuilkalendar API.
     dates = get_dates_per_stream(bag_id)
+
+    # Need to translate 'afvalstrrom_id' value in dates to that of Seenons API.
+    # First we get all afvalstromen for the given bag ID from the Huisvuilkalendar API.
+    afvalstromen = get_afvalstromen(bag_id)
+    # Then we get all available waste streams from the Seenons API.
+    all_waste_streams = get_all_waste_streams()
+    # Now we modify afvalstromen with the Seenons IDs.
+    new_afvalstromen = translate_afvalstromen_to_seenons_id(all_waste_streams, afvalstromen)
+    # Need to get afvalstromen list again because it is mutated. Name it 'old' to distinguish.
+    old_afvalstromen = get_afvalstromen(bag_id)
+    # Create dict to map old to new afvalstromen
+    mapping_dict = {}
+    for index, item in enumerate(old_afvalstromen):
+        mapping_dict[item['id']] = new_afvalstromen[index]['id']
+    # Modify dates according to mapping dict
+    for item in dates:
+        if item['afvalstroom_id'] in mapping_dict:
+            item['afvalstroom_id'] = mapping_dict[item['afvalstroom_id']]
 
     # Add weekday info to the dates list
     for item in dates:
