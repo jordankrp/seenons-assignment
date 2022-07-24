@@ -5,6 +5,7 @@ from integration import (
     choose_house_letter,
     get_waste_streams_per_postcode,
     get_dates_per_stream,
+    modify_dates,
 )
 
 
@@ -72,6 +73,33 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(dates[1]["ophaaldatum"], "2022-01-11")
         print("test 6 completed")
 
+    def test_7(self):
+        # Test modify dates list
+        bag_id = "0518200001769844"
+        dates = get_dates_per_stream(bag_id)
+        self.assertEqual(dates[0]["afvalstroom_id"], 4)
+        self.assertEqual(dates[-3]["afvalstroom_id"], 3)
+        dates = modify_dates(bag_id, dates)
+        # Verify that stream 3 -> 4 (papier) and stream 4 -> 3 (rest)
+        self.assertEqual(dates[0]["afvalstroom_id"], 3)
+        self.assertEqual(dates[-3]["afvalstroom_id"], 4)
+        print("test 7 completed")
+
+    def test_8(self):
+        # Test modify dates list custom made
+        bag_id = "0518200001769844"
+        dates = [
+            {"afvalstroom_id": 1, "ophaaldatum": "2022-01-04"},
+            {"afvalstroom_id": 2, "ophaaldatum": "2022-01-05"},
+            {"afvalstroom_id": 5, "ophaaldatum": "2022-01-09"},
+        ]
+        dates = modify_dates(bag_id, dates)
+        # Verify that stream 1 -> 17 (gft), stream 2 -> 1 (pmd) and stream 5 -> 0 (kerstbomen is unknown, hence 0)
+        self.assertEqual(dates[0]["afvalstroom_id"], 17)
+        self.assertEqual(dates[1]["afvalstroom_id"], 1)
+        self.assertEqual(dates[2]["afvalstroom_id"], 0)
+        print("test 8 completed")
+
 
 if __name__ == "__main__":
     tester = TestIntegration()
@@ -82,3 +110,5 @@ if __name__ == "__main__":
     tester.test_4()
     tester.test_5()
     tester.test_6()
+    tester.test_7()
+    tester.test_8()
