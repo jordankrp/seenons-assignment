@@ -2,7 +2,6 @@ import requests
 import argparse
 import inquirer
 import sys
-import copy
 from datetime import datetime, date
 
 HUISVUILKALENDAR = "https://huisvuilkalender.denhaag.nl"
