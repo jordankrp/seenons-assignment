@@ -59,10 +59,10 @@ def choose_house_letter(house_info):
 def get_bagid(postcode, housenumber, houseletter):
     # Get bag ID from the address details
     url = f"{HUISVUILKALENDAR}/adressen/{postcode}:{housenumber}"
-    response = requests.get(url).json()
-    for item in response:
-        if item["huisletter"] == houseletter:
-            return item["bagid"]
+    addresses = requests.get(url).json()
+    for address in addresses:
+        if address["huisletter"] == houseletter:
+            return address["bagid"]
 
 
 def create_availability_dict(dates, seenons_stream_ids):
@@ -97,9 +97,6 @@ def main(postcode, housenumber, weekdays=None):
 
     # Available waste streams for the postal code given (using Seenons API).
     waste_streams = get_waste_streams(postcode)
-
-    # Available waste streams from Huisvuilkalendar
-    # Assume that stream product ID from Seenons API is the same as Id from Huisvuilkalendar.
 
     # Make list of available stream IDs.
     seenons_stream_ids = []
