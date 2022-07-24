@@ -163,6 +163,8 @@ def main(postcode, housenumber, weekdays=None):
 
     # Check if weekdays are given by the user, if so filter out dates accordingly.
     if weekdays is not None:
+        # Format weekdays list in case user has used wrong case
+        weekdays = [weekday.capitalize() for weekday in weekdays]
         # Need to filter dates list to contain only weekdays asked by the user.
         dates[:] = [d for d in dates if d.get("weekday") in weekdays]
 
@@ -189,11 +191,11 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--housenumber", help="House Number", required=True)
     parser.add_argument(
         "-wd",
-        "--weekdays",
+        "--weekday",
         nargs="+",
         help="Weekdays (Monday, Tuesday etc...)",
         required=False,
     )
     args = parser.parse_args()
 
-    main(args.postcode, args.housenumber, args.weekdays)
+    main(args.postcode, args.housenumber, args.weekday)
