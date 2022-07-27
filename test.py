@@ -1,5 +1,5 @@
 import unittest
-from integration import (
+from integration_cli import (
     get_bagid,
     get_house_info,
     choose_house_letter,
