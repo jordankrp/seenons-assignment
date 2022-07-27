@@ -123,9 +123,3 @@ class Integration:
                 # Then add waste stream ID as key to the dict and assign the dates list as its value.
                 stream_dict[item["afvalstroom_id"]] = available_dates
         return stream_dict
-
-
-if __name__ == "__main__":
-    seenons_API = SeenonsAPI()
-    hague_API = HagueAPI()
-    integration = Integration()
