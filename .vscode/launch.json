@@ -4,14 +4,15 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "API integration layer",
+            "name": "User Interface",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["-p", "2566WD", "-n", "41"]
+            "args": ["-p", "2512HE", "-n", "68", "-wd", "Tuesday"]
         },
         {
             "name": "Unit Tests",
