@@ -47,7 +47,9 @@ def main(post_code, house_number, weekdays=None):
     seenons_streams_per_postcode = seenons_api.get_waste_streams_per_postcode(post_code)
 
     # Make list of available stream IDs.
-    seenons_stream_ids = seenons_api.get_list_of_stream_ids(seenons_streams_per_postcode)
+    seenons_stream_ids = seenons_api.get_list_of_stream_ids(
+        seenons_streams_per_postcode
+    )
 
     # Available dates per stream using Huisvuilkalendar API.
     hague_stream_dates = hague_api.get_dates_per_stream(bag_id)
@@ -56,7 +58,9 @@ def main(post_code, house_number, weekdays=None):
     hague_available_streams = hague_api.get_waste_streams(bag_id)
 
     # Modify stream dates fetched from the Hague API
-    hague_stream_dates = integration.modify_hague_stream_dates(hague_available_streams, all_seenons_waste_streams, hague_stream_dates)
+    hague_stream_dates = integration.modify_hague_stream_dates(
+        hague_available_streams, all_seenons_waste_streams, hague_stream_dates
+    )
 
     # Add weekday to hague API stream dates list
     hague_stream_dates = integration.add_weekday_to_hague_dates(hague_stream_dates)
@@ -66,10 +70,14 @@ def main(post_code, house_number, weekdays=None):
         # Format weekdays list in case user has used wrong case
         weekdays = [weekday.capitalize() for weekday in weekdays]
         # Need to filter Hague stream dates list to contain only weekdays asked by the user.
-        hague_stream_dates[:] = [d for d in hague_stream_dates if d.get("weekday") in weekdays]
+        hague_stream_dates[:] = [
+            d for d in hague_stream_dates if d.get("weekday") in weekdays
+        ]
 
     # Dictionary to save available waste stream data
-    available_streams = integration.create_availability_dict(hague_stream_dates, seenons_stream_ids)
+    available_streams = integration.create_availability_dict(
+        hague_stream_dates, seenons_stream_ids
+    )
 
     # Visualise output
     print(

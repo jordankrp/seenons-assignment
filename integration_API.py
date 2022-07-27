@@ -1,20 +1,15 @@
-#from flask import Flask, request
-#from flask_restful import Resource, Api, reqparse
 from datetime import datetime, date
 import requests
 import sys
 import copy
 
-#app = Flask(__name__)
-#api = Api(app)
 
 SEENONS_BASE = "https://api-dev-593.seenons.com/api/me/streams"
 HUISVUILKALENDAR = "https://huisvuilkalender.denhaag.nl"
 YEAR = date.today().year
 
 
-class SeenonsAPI():
-
+class SeenonsAPI:
     def get_all_waste_streams(self):
         # Get all waste streams from Seenons API.
         url = SEENONS_BASE
@@ -35,8 +30,7 @@ class SeenonsAPI():
         return stream_ids
 
 
-class HagueAPI():
-
+class HagueAPI:
     def get_waste_streams(self, bag_id):
         # Get 'afvalstromen' from the Huisvuilkalendar API.
         url = f"{HUISVUILKALENDAR}/rest/adressen/{bag_id}/afvalstromen"
@@ -67,26 +61,33 @@ class HagueAPI():
                 return address["bagid"]
 
 
-class Integration():
-
+class Integration:
     def translate_date_to_weekday(self, calendar_date):
         # Translate calendar date format to weekday (Monday, Tuesday etc).
         datetime_object = datetime.strptime(calendar_date, "%Y-%m-%d")
         return datetime_object.strftime("%A")
 
-    def translate_hague_to_seenons_id(self, all_seenons_waste_streams, hague_available_streams):
+    def translate_hague_to_seenons_id(
+        self, all_seenons_waste_streams, hague_available_streams
+    ):
         # Change the IDs in the Hague available streams to match those of Seenons API.
         # All IDs are considered (0) until we find a match to the Seenons API.
         for hague_stream in hague_available_streams:
             hague_stream["id"] = 0
             for seenons_stream in all_seenons_waste_streams["items"]:
                 # If the stream product ID starts with the title in the Hague stream ID, then overwrite the Hague stream ID.
-                if seenons_stream["type"].lower().startswith(hague_stream["title"].lower()):
+                if (
+                    seenons_stream["type"]
+                    .lower()
+                    .startswith(hague_stream["title"].lower())
+                ):
                     hague_stream["id"] = seenons_stream["stream_product_id"]
         # Keep in mind that returned list is mutated
         return hague_available_streams
 
-    def modify_hague_stream_dates(self, hague_waste_streams, all_seenons_waste_streams, hague_dates):
+    def modify_hague_stream_dates(
+        self, hague_waste_streams, all_seenons_waste_streams, hague_dates
+    ):
         # Need to map 'afvalstrrom_id' value in Hague dates list to that of Seenons API.
         # First we make a deep copy of the Hague waste streams date as the list will be mutated in the next modification step
         old_hague_waste_streams = copy.deepcopy(hague_waste_streams)
@@ -109,7 +110,7 @@ class Integration():
         for item in hague_dates:
             item["weekday"] = self.translate_date_to_weekday(item["ophaaldatum"])
         return hague_dates
-    
+
     def create_availability_dict(self, hague_dates, seenons_stream_ids):
         # Create a dict with matching stream ID as keys and all available dates per stream as values.
         stream_dict = {}
